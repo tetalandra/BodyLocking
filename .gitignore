@@ -9,3 +9,5 @@ data/enroll/
 logs/
 runs/
 .claude/
+config.bat
+node_modules

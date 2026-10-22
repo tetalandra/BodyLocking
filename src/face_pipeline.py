@@ -149,8 +149,13 @@ class MultiFaceDetector:
             base_options=BaseOptions(model_asset_path=landmarker_model),
             running_mode=mp_vision.RunningMode.IMAGE,
             num_faces=1,
-            min_face_detection_confidence=0.5,
-            min_face_presence_confidence=0.5,
+            # lower than the box detector's own threshold - a moderately pitched-down
+            # face (e.g. looking down at a phone) still passes the box detector but
+            # was failing the landmarker's own internal face check, dropping the face
+            # entirely out of detect() and triggering an unnecessary CONFIRMED->TEMPORARY
+            # drop on every re-verification that happened to land during the glance
+            min_face_detection_confidence=0.3,
+            min_face_presence_confidence=0.3,
         )
         self.landmarker = mp_vision.FaceLandmarker.create_from_options(options)
         self.IDX = (33, 263, 1, 61, 291)  # left eye, right eye, nose, mouth left, mouth right

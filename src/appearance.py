@@ -18,8 +18,10 @@ import numpy as np
 
 # torso band: below the head, above where legs/background dominate - robust
 # to the person's facing direction, since clothing color doesn't depend on
-# which way they're turned
-_TORSO_Y_RANGE = (0.25, 0.65)
+# which way they're turned. Kept low (starts past the chest) so a hand/arm
+# raised to cover the face - which reaches down into the upper-chest area -
+# doesn't inject skin-tone pixels into the sampled region.
+_TORSO_Y_RANGE = (0.40, 0.75)
 _TORSO_X_MARGIN = 0.15
 _HIST_BINS = (12, 12, 12)  # H, S, V
 

@@ -13,8 +13,8 @@ signature (averaged across all four orientations, so it generalizes) to
 data/db/appearance_db.npz.
 
 Run:
-    python -m src.enroll --name Alice
-    python -m src.enroll --name Alice --phase-seconds 5   # slower, e.g. for testing
+    python -m src.enroll --name Civil
+    python -m src.enroll --name Civil --phase-seconds 5   # slower, e.g. for testing
 
 Shows a live window with on-screen rotation prompts; 'q' aborts. Falls
 back to console-only progress if no display is available.
@@ -76,7 +76,7 @@ def _try_imshow(window: str, frame: np.ndarray) -> bool:
         return False
 
 
-def run_enrollment(name: str, phase_seconds: float = 3.5, capture_every: float = 0.2) -> None:
+def run_enrollment(name: str, phase_seconds: float = 3.5, capture_every: float = 0.2, mirror: bool = True) -> None:
     face_detector = MultiFaceDetector()
     body_detector = PersonDetector()
     embedder = ArcFaceEmbedderONNX()
@@ -103,6 +103,8 @@ def run_enrollment(name: str, phase_seconds: float = 3.5, capture_every: float =
                 ok, frame = cap.read()
                 if not ok:
                     break
+                if mirror:
+                    frame = cv2.flip(frame, 1)
 
                 faces = face_detector.detect(frame, max_faces=1)
                 bodies = body_detector.detect(frame, max_people=1)
@@ -175,13 +177,16 @@ def main():
     parser.add_argument("--name", default=None, help="identity to enroll; prompted if omitted")
     parser.add_argument("--phase-seconds", type=float, default=3.5,
                          help="seconds to hold each of the 4 rotation phases (FRONT/LEFT/BACK/RIGHT)")
+    parser.add_argument("--no-mirror", action="store_true",
+                         help="disable the default mirror flip - must match whatever src.track_wholly "
+                              "uses, since face embeddings aren't flip-invariant")
     args = parser.parse_args()
 
-    name = args.name or input("Enter person name to enroll (e.g., Alice): ").strip()
+    name = args.name or input("Enter person name to enroll (e.g., Civil): ").strip()
     if not name:
         print("No name provided. Exiting.")
         return
-    run_enrollment(name, phase_seconds=args.phase_seconds)
+    run_enrollment(name, phase_seconds=args.phase_seconds, mirror=not args.no_mirror)
 
 
 if __name__ == "__main__":

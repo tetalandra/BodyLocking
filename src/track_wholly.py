@@ -82,6 +82,9 @@ def main():
     parser.add_argument("--temporary-floor", type=float, default=0.35, help="confidence below this -> UNKNOWN")
     parser.add_argument("--log", default=None, help="CSV path to record state/confidence per frame for evaluation")
     parser.add_argument("--debug", action="store_true")
+    parser.add_argument("--no-mirror", action="store_true",
+                         help="disable the default mirror flip (by default the view is flipped "
+                              "horizontally so your right appears on your right, like a mirror)")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -121,6 +124,8 @@ def main():
             ok, frame = cap.read()
             if not ok:
                 break
+            if not args.no_mirror:
+                frame = cv2.flip(frame, 1)
 
             result = tracker.update(frame)
             log_row(log_file, tracker.frame_index, result)
